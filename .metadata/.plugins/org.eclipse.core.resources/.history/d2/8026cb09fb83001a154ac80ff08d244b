@@ -1,0 +1,158 @@
+package com.usecase.DEMOAccountInfo;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJacksonValue;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+import com.fasterxml.jackson.databind.ser.FilterProvider;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+
+
+@RestController
+public class DemoAccountInfoController {
+	
+    private static final Logger LOGGER = LogManager.getLogger(DemoAccountInfoController.class);
+
+	@Autowired
+	private RestTemplate restTemplate;
+	
+	private SimpleBeanPropertyFilter errFilter = SimpleBeanPropertyFilter.filterOutAllExcept("errorCode", "errorMessage");
+	private FilterProvider errFilters = new SimpleFilterProvider().addFilter("ResponseFilter", errFilter);
+	
+	@PostMapping("/bank/user/dashboard/accountInfo")
+	public MappingJacksonValue accountInfo (@RequestBody DashboardRequest request) {
+		AccountInfoResponse response = new AccountInfoResponse();
+		LOGGER.info(request);
+		
+		SimpleBeanPropertyFilter accountFilter = SimpleBeanPropertyFilter.filterOutAllExcept("accounts");
+	    FilterProvider accountFilters = new SimpleFilterProvider().addFilter("ResponseFilter", accountFilter);
+	    
+	    MappingJacksonValue mapping = new MappingJacksonValue(response);
+		
+		Map<String, String> params = new HashMap<>();
+		params.put("userID", request.getUserID());
+		
+		try {
+			ResponseEntity<User> responseFromDB = restTemplate.getForEntity("http://demo-database/user/authentication?userID={userID}", 
+					User.class, params);
+			
+			User user = responseFromDB.getBody();
+			LOGGER.info(user.getAccounts());
+			if (user.getCustomerSessionID().compareTo(request.getSessionID()) == 0) { 	//session ID matches
+				if(user.getSessionStatus().compareToIgnoreCase("ACTIVE") == 0) {	// session active
+					
+					ResponseEntity<Account[]> responseAccounts = restTemplate.getForEntity("http://demo-database/user/dashboard/accountInfo?userID={userID}",
+							Account[].class, params);
+					response.setAccounts(responseAccounts.getBody());
+					mapping.setFilters(accountFilters);
+					
+				} else {	// session inactive
+					response.setErrorCode("SESSION_INACTIVE");
+					response.setErrorMessage("The session is inactive, please login again");
+					mapping.setFilters(errFilters);
+				}
+			} else {		// Invalid session ID
+				response.setErrorCode("INVALID_SESSION");
+				response.setErrorMessage("Session not found with session id: " + request.getSessionID());
+				mapping.setFilters(errFilters);
+			}
+		
+		} catch(Exception e) {
+			LOGGER.info(e);
+			response.setErrorCode("INVALID_USER");
+			response.setErrorMessage("User not found with user id: " + request.getUserID());
+			mapping.setFilters(errFilters);
+		}
+		
+		return mapping;
+	}
+	
+	@GetMapping(path="/bank/user/rewards/{userID}")
+	public MappingJacksonValue getRewards(@PathVariable String userID, @RequestHeader String sessionID) {
+		AccountInfoResponse response = new AccountInfoResponse();
+		LOGGER.info(userID);
+		LOGGER.info("******* ---------> " + sessionID);
+		
+		SimpleBeanPropertyFilter rewardFilter = SimpleBeanPropertyFilter.filterOutAllExcept("rewards");
+	    FilterProvider rewardFilters = new SimpleFilterProvider().addFilter("ResponseFilter", rewardFilter);
+	    
+	    MappingJacksonValue mapping = new MappingJacksonValue(response);
+		
+		Map<String, String> params = new HashMap<>();
+		params.put("userID", userID);
+		
+		try {
+			ResponseEntity<User> responseFromDB = restTemplate.getForEntity("http://demo-database/user/authentication?userID={userID}", 
+					User.class, params);
+			
+			User user = responseFromDB.getBody();
+			LOGGER.info(user);
+			
+			if (user.getCustomerSessionID().compareTo(sessionID) == 0) { 			//session ID matches
+				if(user.getSessionStatus().compareToIgnoreCase("ACTIVE") == 0) {	// session active
+					ResponseEntity<Reward[]> responseRewards = restTemplate.getForEntity("http://demo-database/user/rewards/{userID}",
+					Reward[].class, params);
+					response.setRewards(responseRewards.getBody());
+					mapping.setFilters(rewardFilters);
+				} else {	// session inactive
+					response.setErrorCode("SESSION_INACTIVE");
+					response.setErrorMessage("The session is inactive, please login again");
+					mapping.setFilters(errFilters);
+				}
+			} else {		// Invalid session ID
+				response.setErrorCode("INVALID_SESSION");
+				response.setErrorMessage("Session not found with session id: " + sessionID);
+				mapping.setFilters(errFilters);
+			}				
+		} catch(Exception e) {
+			LOGGER.info(e);
+			response.setErrorCode("INVALID_USER");
+			response.setErrorMessage("User not found with user id: " + userID);
+			mapping.setFilters(errFilters);
+		}
+		
+		return mapping;
+	}
+	
+	@PostMapping("/bank/user/dashboard/transactions")
+	public MappingJacksonValue transactionInfo (@RequestBody DashboardRequest request) {
+		AccountInfoResponse response = new AccountInfoResponse();
+		
+		SimpleBeanPropertyFilter transactionFilter = SimpleBeanPropertyFilter.filterOutAllExcept("transactions");
+	    FilterProvider transactionFilters = new SimpleFilterProvider().addFilter("ResponseFilter", transactionFilter);
+	    
+	    MappingJacksonValue mapping = new MappingJacksonValue(response);
+		
+		Map<String, String> params = new HashMap<>();
+		params.put("sessionID", request.getSessionID());
+		params.put("accountNumber", request.getAccountNumber());
+		
+		ResponseEntity<User> responseFromDB = restTemplate.getForEntity("http://demo-database/user/dashboard/transactions/{sessionID}/{accountNumber}", 
+				User.class, params);
+		
+		User user = responseFromDB.getBody();
+		LOGGER.info(user.getAccounts());
+		
+		Account[] accounts = (Account[]) user.getAccounts().toArray();
+		
+		response.setTransactions((Transaction[]) accounts[0].getTransactions().toArray());
+		mapping.setFilters(transactionFilters);
+
+		return mapping;
+		
+	}
+}

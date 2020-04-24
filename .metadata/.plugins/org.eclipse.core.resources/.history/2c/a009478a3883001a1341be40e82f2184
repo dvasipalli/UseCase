@@ -1,0 +1,15 @@
+package com.usecase.DEMODatabase.entity;
+
+import java.math.BigDecimal;
+import java.util.Date;
+
+public class Transaction {
+	
+	private Date transactionDate;
+	private BigDecimal transactionAmount;
+	private String transactionCurrency;
+	private String transactionStatus;
+	private String transactionDescription;
+	
+	
+}

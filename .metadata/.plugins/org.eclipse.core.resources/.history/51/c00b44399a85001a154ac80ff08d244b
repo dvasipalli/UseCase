@@ -1,0 +1,21 @@
+package com.usecase.DEMOLogoff;
+
+public class LogoffRequest {
+
+	private String sessionID;
+
+	public LogoffRequest(String sessionID) {
+		super();
+		this.sessionID = sessionID;
+	}
+
+	public String getSessionID() {
+		return sessionID;
+	}
+
+	public void setSessionID(String sessionID) {
+		this.sessionID = sessionID;
+	}
+	
+	
+}

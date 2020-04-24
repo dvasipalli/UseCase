@@ -1,0 +1,5 @@
+package com.usecase.demologin;
+
+public class AuthenticationRequest {
+
+}

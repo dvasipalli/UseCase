@@ -1,0 +1,20 @@
+package com.usecase.DEMOAccountInfo;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+@RestController
+public class DemoAccountInfoController {
+	
+	@Autowired
+	private RestTemplate restTemplate;
+	
+	@PostMapping("/bank/user/dashboard/accountInfo")
+	public AccountInfoResponse accountInfo (@RequestBody DashboardRequest request) {
+		
+		return AccountInfoResponse();
+	}
+}

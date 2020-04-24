@@ -1,0 +1,69 @@
+package com.usecase.demologin;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
+
+@RestController
+public class DemoLoginController {
+	
+	@Autowired
+    private RestTemplate restTemplate;
+	
+    private static final Logger LOGGER = LogManager.getLogger(DemoLoginController.class);
+	
+	@PostMapping("/bank/user/authentication")
+	public AuthenticationResponse loginAuthentication(@RequestBody AuthenticationRequest request) {
+		
+		AuthenticationResponse response = new AuthenticationResponse();
+		
+		final DiscoveryClient discoveryClient;
+		
+		LOGGER.info(discoveryClient.getServices());
+		
+		Map<String, String> params = new HashMap<>();
+		params.put("userID", request.getUserID());
+		
+		try {
+			User user = restTemplate.getForEntity("http://demo-database/user/authentication/{userID}", 
+					User.class, params).getBody();
+			
+			if(request.getPassword().compareTo(user.getPassword()) == 0) {			// Correct password
+				if(user.getSessionStatus().compareToIgnoreCase("ACTIVE") == 0) {
+					response.setLoginStatus("User already logged in");
+					response.setSessionID(user.getCustomerSessionID());
+				} else {
+					String sessionID = UUID.randomUUID().toString();
+
+			        Map<String, String> updateParams = new HashMap<>();
+			        updateParams.put("userID", user.getUserID());
+			        updateParams.put("sessionID", sessionID);
+
+			        restTemplate.put("http://demo-database/user/updateLoginDetails", updateParams);
+					response.setLoginStatus("Login Successful");
+					response.setSessionID(sessionID);
+				}
+				response.setCustomerName(user.getCustomerName());
+				response.setCustomerType(user.getCustomerType());
+				response.setLastLoginDate(user.getLastLoginDate());
+			} else {															// Incorrect password
+				response.setLoginStatus("Invalid password");;
+			}
+		} catch(RestClientException e) {
+			response.setLoginStatus("Unable to login, Please try again!");
+		} catch(Exception e) {
+			response.setLoginStatus("Invalid UserID");
+		} 
+		return response;
+	}
+}

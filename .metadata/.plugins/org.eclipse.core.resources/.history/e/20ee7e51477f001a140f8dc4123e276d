@@ -1,0 +1,15 @@
+package com.usecase.DEMOLogoff;
+
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class DemoLogoffController {
+
+	@DeleteMapping(path="/bank/user/authentication")
+	public LogoffResponse logoffSession(String sessionID) {
+		
+		
+		return new LogoffResponse("");
+	}
+}

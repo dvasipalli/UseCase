@@ -1,0 +1,36 @@
+package com.usecase.demologin;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+import org.springframework.context.annotation.Bean;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+@RestController
+public class DemoLoginController {
+	
+	@Autowired
+    private RestTemplate restTemplate;
+	
+	@PostMapping("/bank/user/authentication")
+	public User loginAuthentication(String userID, String password) {
+			
+		Map<String, String> params = new HashMap<>();
+		params.put("userID", userID);
+		
+		ResponseEntity<User> response = restTemplate.getForEntity("http://demo-database/user/authentication?userID={userID}",
+				User.class, params);
+		
+	//	AuthenticationResponse response = new AuthenticationResponse();
+		return response.getBody();
+		
+		//return new AuthenticationResponse(user.get);
+	}
+	
+}

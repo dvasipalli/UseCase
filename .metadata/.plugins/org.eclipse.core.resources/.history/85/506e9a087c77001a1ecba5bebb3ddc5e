@@ -1,0 +1,5 @@
+package com.example.restfulweb;
+
+public class HelloWorldBean {
+
+}

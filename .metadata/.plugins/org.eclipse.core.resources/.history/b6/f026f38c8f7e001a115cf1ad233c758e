@@ -1,0 +1,57 @@
+package com.usecase.demologin;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+@RestController
+public class DemoLoginController {
+	
+	@Autowired
+    private RestTemplate restTemplate;
+	
+	@PostMapping("/bank/user/authentication")
+	public AuthenticationResponse loginAuthentication(@RequestBody AuthenticationRequest request) {
+		
+		AuthenticationResponse response;
+		
+		Map<String, String> params = new HashMap<>();
+		params.put("userID", request.getUserID());
+		
+		try {
+			ResponseEntity<User> responseFromDB = restTemplate.getForEntity("http://demo-database/user/authentication?userID={userID}", 
+					User.class, params);
+			
+			User user = responseFromDB.getBody();
+			response = new AuthenticationResponse("Invalid", user.getCustomerName(), user.getCustomerType(), 
+					user.getLastLoginDate(), user.getCustomerSessionID());
+		
+			if(request.getPassword().compareTo(user.getPassword()) == 0) {	// Correct password
+				if(user.getSessionStatus().compareToIgnoreCase("ACTIVE") == 0) {
+					response.setLoginStatus("User already logged in");
+				} else {
+					
+					String sessionID = UUID.randomUUID().toString();
+					response.setLoginStatus("Login Successful");	
+				}
+			} else {														// Incorrect password
+				response.setLoginStatus("Invalid password");;
+			}
+		
+		
+		} catch(Exception e) {
+			response = new AuthenticationResponse("Invalid UserID", null, null, null, null);
+		}
+		
+		return response;
+		
+	}
+	
+}

@@ -1,0 +1,49 @@
+package com.usecase.DEMOAccountInfo;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+import com.usecase.demologin.AuthenticationResponse;
+import com.usecase.demologin.User;
+
+@RestController
+public class DemoAccountInfoController {
+	
+	@Autowired
+	private RestTemplate restTemplate;
+	
+	@PostMapping("/bank/user/dashboard/accountInfo")
+	public AccountInfoResponse accountInfo (@RequestBody DashboardRequest request) {
+		AccountInfoResponse response = new AccountInfoResponse();
+		
+		Map<String, String> params = new HashMap<>();
+		params.put("userID", request.getUserID());
+		
+		try {
+			ResponseEntity<User> responseFromDB = restTemplate.getForEntity("http://demo-database/user/authentication?userID={userID}", 
+					User.class, params);
+			
+			User user = responseFromDB.getBody();
+			
+			if (user.getCustomerSessionID().compareTo(request.getSessionID()) == 0) { 	//session ID matches
+				if(user.getSessionStatus().compareToIgnoreCase("ACTIVE") == 0) {	// session active
+					
+				} else {	// session inactive
+					
+				}
+			} else {		// Invalid session ID
+				
+			}
+		
+		}catch(Exception e) {}
+		
+		return new AccountInfoResponse();
+	}
+}

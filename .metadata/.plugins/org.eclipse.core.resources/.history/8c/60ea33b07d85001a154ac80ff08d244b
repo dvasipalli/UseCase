@@ -1,0 +1,57 @@
+package com.usecase.demologin;
+
+import java.util.Date;
+
+public class AuthenticationResponse {
+
+	private String loginStatus;
+	private String customerName;
+	private String customerType;
+	private Date lastLoginDate;
+	private String sessionID;
+	
+	public AuthenticationResponse(String loginStatus, String customerName, String customerType, Date lastLoginDate,
+			String sessionID) {
+		super();
+		this.loginStatus = loginStatus;
+		this.customerName = customerName;
+		this.customerType = customerType;
+		this.lastLoginDate = lastLoginDate;
+		this.sessionID = sessionID;
+	}
+	public AuthenticationResponse() {
+		// TODO Auto-generated constructor stub
+	}
+	public String getLoginStatus() {
+		return loginStatus;
+	}
+	public void setLoginStatus(String loginStatus) {
+		this.loginStatus = loginStatus;
+	}
+	public String getCustomerName() {
+		return customerName;
+	}
+	public void setCustomerName(String customerName) {
+		this.customerName = customerName;
+	}
+	public String getCustomerType() {
+		return customerType;
+	}
+	public void setCustomerType(String customerType) {
+		this.customerType = customerType;
+	}
+	public Date getLastLoginDate() {
+		return lastLoginDate;
+	}
+	public void setLastLoginDate(Date lastLoginDate) {
+		this.lastLoginDate = lastLoginDate;
+	}
+	public String getSessionID() {
+		return sessionID;
+	}
+	public void setSessionID(String sessionID) {
+		this.sessionID = sessionID;
+	}
+	
+	
+}

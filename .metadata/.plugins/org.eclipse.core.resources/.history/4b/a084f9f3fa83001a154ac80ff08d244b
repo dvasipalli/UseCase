@@ -1,0 +1,54 @@
+package com.usecase.DEMOAccountInfo;
+
+import com.fasterxml.jackson.annotation.JsonFilter;
+
+@JsonFilter("ResponseFilter")
+public class AccountInfoResponse {
+
+	private String errorCode;
+	private String errorMessage;
+	
+	private Account[] accounts;
+	private Transaction[] transactions;
+	private Reward[] rewards;
+
+	public Reward[] getRewards() {
+		return rewards;
+	}
+
+	public void setRewards(Reward[] rewards) {
+		this.rewards = rewards;
+	}
+
+	public String getErrorCode() {
+		return errorCode;
+	}
+
+	public void setErrorCode(String errorCode) {
+		this.errorCode = errorCode;
+	}
+
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+
+	public void setErrorMessage(String errorMessage) {
+		this.errorMessage = errorMessage;
+	}
+
+	public Account[] getAccounts() {
+		return accounts;
+	}
+
+	public void setAccounts(Account[] accounts2) {
+		this.accounts = accounts2;
+	}
+
+	public Transaction[] getTransactions() {
+		return transactions;
+	}
+
+	public void setTransactions(Transaction[] transactions) {
+		this.transactions = transactions;
+	}
+}

@@ -1,0 +1,86 @@
+package com.usecase.DEMODatabase;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.usecase.DEMODatabase.entity.User;
+import com.usecase.DEMODatabase.entity.Account;
+import com.usecase.DEMODatabase.repository.UserRepository;
+import com.usecase.DEMODatabase.repository.AccountRepository;
+
+@RestController
+public class DatabaseController {
+
+    private static final Logger LOGGER = LogManager.getLogger(DatabaseController.class);
+    
+	@Autowired
+	private UserRepository userRepository;
+	private AccountRepository accountRepository;
+	
+	@GetMapping(path="/user/authentication")
+	public User authentication(String userID) {
+		Optional<User> user = userRepository.findById(userID);
+		
+		if(user.isPresent()) {
+			return user.get();
+		} else {
+			
+			throw new UserNotFoundException("userID - " + userID);
+		}
+	}
+	
+	@PutMapping(path="/user/updateLoginDetails")
+	public String activateSession(@RequestBody UserSession session) {
+		//LOGGER.info("sfsrdzfvdDSVB " + session);
+		User user = userRepository.findByUserID(session.getUserID());
+		user.setLastLoginDate(new Date());
+		user.setCustomerSessionID(session.getSessionID());
+		user.setSessionStatus("ACTIVE");
+		//LOGGER.info(user);
+		userRepository.save(user);
+		return "Success";
+	}
+	
+	@PutMapping(path="/user/deactivateSession")
+	public String deactivateSession(@RequestBody SessionID sId) {
+		LOGGER.info("SESSION ID IN DB ******** ----------> " + sId.toString());
+		User user = null;
+		user = userRepository.findByCustomerSessionID(sId.getId());
+			
+		if(user != null) {
+			user.setSessionStatus("INACTIVE");
+			userRepository.save(user);
+			return "Success";
+		} else {
+			throw new UserNotFoundException("invalid session ID " + sId);	
+		}		
+	}
+	
+	@GetMapping(path="/user/dashboard/accountInfo")
+	public List<Account> accountInfo(@RequestParam String sessionID, String userID) {
+		
+		LOGGER.info("***** -----> sessionID " + sessionID);
+		LOGGER.info("***** -----> userID " + userID);
+		User user;
+		try {
+			user = userRepository.findByUserID(userID);
+			return accountRepository.findAllByUser(user);
+			//return user.getAccounts();
+			/*LOGGER.info(user);
+			return;*/
+		} catch(Exception e) {
+			
+			throw new UserNotFoundException("Invalid user ID " + userID);
+		}
+	} 
+}

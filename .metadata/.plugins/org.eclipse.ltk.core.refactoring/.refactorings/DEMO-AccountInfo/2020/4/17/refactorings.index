@@ -1,0 +1,4 @@
+1587436488584	Encapsulate field 'accountNumber'
+1587436803331	Encapsulate field 'transactions'
+1587483675137	Encapsulate field 'accounts'
+1587672463371	Rename type 'DashboardRequest'

@@ -1,0 +1,16 @@
+package com.usecase.DEMODatabase.repository;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import com.usecase.DEMODatabase.entity.Account;
+import com.usecase.DEMODatabase.entity.User;
+
+public interface AccountRepository extends JpaRepository<Account, Long>{
+	
+	@Query("select a from Account a where accountNumber = ?1")
+	Account findByAccountNumber(Long accountNumber);
+	List<Account> findAllByUser_UserID(String userID);
+}

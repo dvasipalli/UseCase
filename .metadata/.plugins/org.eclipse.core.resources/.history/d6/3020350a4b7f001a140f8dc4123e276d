@@ -1,0 +1,19 @@
+package com.usecase.DEMODatabase;
+
+public class SessionID {
+	private String sessionID;
+
+	public SessionID(String sessionID) {
+		super();
+		this.sessionID = sessionID;
+	}
+
+	public String getSessionID() {
+		return sessionID;
+	}
+
+	public void setSessionID(String sessionID) {
+		this.sessionID = sessionID;
+	}
+	
+}
